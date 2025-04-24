@@ -22,3 +22,7 @@ def configure_logging():
         compression="zip",
         level="DEBUG"
     )
+
+def get_logger(name: str):
+    """Get a configured logger instance for a module"""
+    return logger.bind(name=name)
