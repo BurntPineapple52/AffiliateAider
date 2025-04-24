@@ -22,7 +22,7 @@
 ## Reddit Integration
 - [x] Set up PRAW wrapper
 - [ ] Implement authentication system
-- [ ] Create thread/comment fetcher
+- [x] Create thread/comment fetcher
 - [ ] Add reply posting functionality
 - [ ] Implement account rotation
 - [ ] Set up proxy management

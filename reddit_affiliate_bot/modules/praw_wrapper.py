@@ -76,3 +76,54 @@ class RedditWrapper:
         except Exception as e:
             logger.error(f"Failed to fetch rules for {subreddit_name}: {str(e)}")
             return None
+
+    def get_new_submissions(self, subreddit_name: str, limit: int = 10) -> List[praw.models.Submission]:
+        """Fetch new submissions from a subreddit"""
+        try:
+            subreddit = self.reddit.subreddit(subreddit_name)
+            submissions = list(subreddit.new(limit=limit))
+            logger.debug(f"Fetched {len(submissions)} new submissions from {subreddit_name}")
+            return submissions
+        except Exception as e:
+            logger.error(f"Failed to fetch submissions from {subreddit_name}: {str(e)}")
+            return []
+
+    def get_hot_submissions(self, subreddit_name: str, limit: int = 10) -> List[praw.models.Submission]:
+        """Fetch hot submissions from a subreddit"""
+        try:
+            subreddit = self.reddit.subreddit(subreddit_name)
+            submissions = list(subreddit.hot(limit=limit))
+            logger.debug(f"Fetched {len(submissions)} hot submissions from {subreddit_name}")
+            return submissions
+        except Exception as e:
+            logger.error(f"Failed to fetch hot submissions from {subreddit_name}: {str(e)}")
+            return []
+
+    def get_comments_from_submission(self, submission_id: str, limit: int = 20) -> List[praw.models.Comment]:
+        """Fetch comments from a submission"""
+        try:
+            submission = self.get_submission(submission_id)
+            if not submission:
+                return []
+                
+            submission.comments.replace_more(limit=0)  # Remove MoreComments objects
+            comments = list(submission.comments.list())[:limit]
+            logger.debug(f"Fetched {len(comments)} comments from submission {submission_id}")
+            return comments
+        except Exception as e:
+            logger.error(f"Failed to fetch comments from submission {submission_id}: {str(e)}")
+            return []
+
+    def search_submissions(self, query: str, subreddit: str = None, limit: int = 10) -> List[praw.models.Submission]:
+        """Search for submissions matching query"""
+        try:
+            if subreddit:
+                results = list(self.reddit.subreddit(subreddit).search(query, limit=limit))
+            else:
+                results = list(self.reddit.subreddit("all").search(query, limit=limit))
+                
+            logger.debug(f"Found {len(results)} submissions matching query: {query}")
+            return results
+        except Exception as e:
+            logger.error(f"Failed to search submissions: {str(e)}")
+            return []
