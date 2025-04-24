@@ -20,7 +20,7 @@
 - [x] Set up rate limiting handling
 
 ## Reddit Integration
-- [ ] Set up PRAW wrapper
+- [x] Set up PRAW wrapper
 - [ ] Implement authentication system
 - [ ] Create thread/comment fetcher
 - [ ] Add reply posting functionality
