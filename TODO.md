@@ -1,7 +1,7 @@
 # Reddit Affiliate Bot - Project To Do List
 
 ## Core Infrastructure
-- [ ] Create project directory structure
+- [x] Create project directory structure
 - [ ] Set up Python virtual environment
 - [ ] Create basic configuration system
 - [ ] Implement logging framework
