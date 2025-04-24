@@ -16,7 +16,7 @@
 ## SERP Integration
 - [x] Choose and integrate SERP API (Scale SERP/SerpApi)
 - [x] Implement search result parsing
-- [ ] Add Reddit URL extraction
+- [x] Add Reddit URL extraction
 - [ ] Set up rate limiting handling
 
 ## Reddit Integration
