@@ -1,6 +1,6 @@
 import praw
 from loguru import logger
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from datetime import datetime
 from config import RedditConfig
 
