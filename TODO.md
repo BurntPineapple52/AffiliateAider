@@ -17,7 +17,7 @@
 - [x] Choose and integrate SERP API (Scale SERP/SerpApi)
 - [x] Implement search result parsing
 - [x] Add Reddit URL extraction
-- [ ] Set up rate limiting handling
+- [x] Set up rate limiting handling
 
 ## Reddit Integration
 - [ ] Set up PRAW wrapper

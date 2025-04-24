@@ -1,8 +1,11 @@
 import re
-from typing import List
+import time
+from typing import List, Optional
 from urllib.parse import urlparse
 
 class SERPParser:
+    _last_request_time: Optional[float] = None
+    MIN_REQUEST_INTERVAL = 2.0  # 2 seconds between requests minimum
     """
     Parser for extracting Reddit URLs from search engine results.
     """
@@ -16,7 +19,17 @@ class SERPParser:
     }
 
     @classmethod
+    def _enforce_rate_limit(cls):
+        """Enforce minimum time between API requests."""
+        if cls._last_request_time is not None:
+            elapsed = time.time() - cls._last_request_time
+            if elapsed < cls.MIN_REQUEST_INTERVAL:
+                time.sleep(cls.MIN_REQUEST_INTERVAL - elapsed)
+        cls._last_request_time = time.time()
+
+    @classmethod
     def extract_reddit_urls(cls, search_results: List[dict]) -> List[str]:
+        cls._enforce_rate_limit()
         """
         Extract and validate Reddit URLs from search engine results.
 
