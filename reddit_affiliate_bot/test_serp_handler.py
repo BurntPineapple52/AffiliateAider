@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from modules.serp_handler import SERPHandler
+from .modules.serp_handler import SERPHandler
 
 class TestSERPHandler(unittest.TestCase):
     @patch('googleapiclient.discovery.build')
