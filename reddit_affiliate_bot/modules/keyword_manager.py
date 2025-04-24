@@ -2,8 +2,27 @@ import csv
 from pathlib import Path
 from typing import List, Dict
 import logging
+from .keyword_tracker import KeywordTracker, KeywordState
 
 logger = logging.getLogger(__name__)
+
+class KeywordManager:
+    """Manages keyword sources and processing"""
+    
+    def __init__(self):
+        self.tracker = KeywordTracker()
+        
+    def load_keywords(self, keywords: list) -> None:
+        """Load multiple keywords into the tracking system"""
+        for keyword in keywords:
+            self.tracker.add_keyword(keyword)
+            
+    def get_next_keyword(self) -> str:
+        """Get the next keyword to process (NEW state)"""
+        new_keywords = self.tracker.get_keywords_by_state(KeywordState.NEW)
+        if new_keywords:
+            return new_keywords[0].keyword
+        return None
 
 class CSVKeywordSource:
     """Handles loading keywords from a CSV file source."""
