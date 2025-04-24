@@ -1,0 +1,19 @@
+# Core requirements
+python-dotenv>=1.0.0
+praw>=7.7.0
+requests>=2.31.0
+
+# SERP scraping
+google-api-python-client>=2.110.0
+
+# Amazon PA API
+python-amazon-paapi>=5.0.0
+
+# NLP/LLM integration
+openai>=1.12.0
+
+# Database
+sqlalchemy>=2.0.23
+
+# Logging
+loguru>=0.7.2
