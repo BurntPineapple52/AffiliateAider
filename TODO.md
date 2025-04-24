@@ -14,7 +14,7 @@
 - [x] Add keyword processing state management
 
 ## SERP Integration
-- [ ] Choose and integrate SERP API (Scale SERP/SerpApi)
+- [x] Choose and integrate SERP API (Scale SERP/SerpApi)
 - [ ] Implement search result parsing
 - [ ] Add Reddit URL extraction
 - [ ] Set up rate limiting handling
