@@ -2,7 +2,7 @@
 
 ## Core Infrastructure
 - [x] Create project directory structure
-- [x] Set up Python virtual environment
+- [x] Set up Python virtual environment (core packages installed)
 - [ ] Create basic configuration system
 - [ ] Implement logging framework
 - [ ] Set up error handling system
