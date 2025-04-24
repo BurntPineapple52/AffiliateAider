@@ -66,7 +66,7 @@ graph TD
 High-Level Pseudocode:
 
 // --- CONFIGURATION ---
-LOAD_CONFIG() // API Keys, Denied List Path, Delays, Thresholds, Account Pool
+config = BotConfig.from_json("config.json") // Loads all API keys and settings from config file
 
 // --- INITIALIZATION ---
 INITIALIZE_LOGGING()
