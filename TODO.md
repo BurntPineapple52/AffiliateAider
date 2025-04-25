@@ -31,7 +31,7 @@
 - [x] Create rule scraper
 - [x] Implement basic rule parsing
 - [x] Add affiliate policy detection
-- [ ] Set up denied subreddit database
+- [x] Set up denied subreddit database
 - [ ] Create rule caching system
 
 ## NLP/LLM Integration
