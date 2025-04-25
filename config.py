@@ -19,6 +19,15 @@ class SERPConfig:
     region: str = "us"
     delay_seconds: float = 2.0
     
+@dataclass 
+class ProxyConfig:
+    host: str = get_env('PROXY_HOST', '')
+    port: int = int(get_env('PROXY_PORT', '0'))
+    username: str = get_env('PROXY_USERNAME', '')
+    password: str = get_env('PROXY_PASSWORD', '')
+    protocol: str = get_env('PROXY_PROTOCOL', 'http')
+    enabled: bool = bool(get_env('PROXY_ENABLED', 'False').lower() == 'true')
+
 @dataclass
 class RedditConfig:
     client_id: str = get_env('REDDIT_CLIENT_ID')
@@ -31,6 +40,7 @@ class RedditConfig:
     delay_seconds: float = 10.0
     max_attempts: int = 3
     auth_method: str = 'password'  # 'password' or 'refresh_token'
+    proxy: ProxyConfig = ProxyConfig()
 
 @dataclass
 class AmazonConfig:
