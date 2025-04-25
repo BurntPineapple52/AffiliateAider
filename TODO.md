@@ -28,7 +28,7 @@
 - [x] Set up proxy management
 
 ## Subreddit Rules
-- [ ] Create rule scraper
+- [x] Create rule scraper
 - [ ] Implement basic rule parsing
 - [ ] Add affiliate policy detection
 - [ ] Set up denied subreddit database

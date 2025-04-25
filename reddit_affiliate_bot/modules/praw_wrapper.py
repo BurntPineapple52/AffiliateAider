@@ -154,18 +154,46 @@ class RedditWrapper:
             return False
 
     def get_subreddit_rules(self, subreddit_name: str) -> Optional[Dict[str, Any]]:
-        """Fetch rules for a subreddit"""
+        """Fetch complete rule set for a subreddit including removal reasons"""
         try:
             subreddit = self.reddit.subreddit(subreddit_name)
+            
+            # Get primary rules
             rules = []
             for rule in subreddit.rules:
                 rules.append({
                     'short_name': rule.short_name,
                     'description': rule.description,
+                    'violation_reason': rule.violation_reason,
                     'created_utc': datetime.fromtimestamp(rule.created_utc),
+                    'priority': rule.priority
                 })
-            logger.debug(f"Fetched rules for subreddit {subreddit_name}")
-            return rules
+
+            # Get moderation rules/removal reasons
+            removal_reasons = []
+            if hasattr(subreddit, 'mod'):  # Only available to moderators
+                try:
+                    for reason in subreddit.mod.removal_reasons:
+                        removal_reasons.append({
+                            'id': reason.id,
+                            'title': reason.title,
+                            'message': reason.message
+                        })
+                except Exception as e:
+                    logger.warning(f"Couldn't fetch removal reasons for {subreddit_name}: {str(e)}")
+
+            result = {
+                'name': subreddit.display_name,
+                'rules': rules,
+                'removal_reasons': removal_reasons,
+                'public_description': subreddit.public_description,
+                'created_utc': datetime.fromtimestamp(subreddit.created_utc),
+                'subscribers': subreddit.subscribers
+            }
+
+            logger.debug(f"Fetched complete ruleset for subreddit {subreddit_name}")
+            return result
+            
         except Exception as e:
             logger.error(f"Failed to fetch rules for {subreddit_name}: {str(e)}")
             return None
