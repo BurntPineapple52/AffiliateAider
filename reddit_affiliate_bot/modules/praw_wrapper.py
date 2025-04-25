@@ -1,3 +1,4 @@
+import time
 import praw
 from loguru import logger
 from typing import Optional, Dict, Any, List
@@ -36,21 +37,42 @@ class RedditWrapper:
                     username=self.config.username,
                     password=self.config.password
                 )
+            
+            # Verify auth immediately
+            self.reddit.user.me()
+            logger.success("Successfully authenticated with Reddit")
+        except praw.exceptions.PRAWException as e:
+            logger.error(f"Authentication failed: {str(e)}")
+            raise RuntimeError(f"Reddit authentication failed: {str(e)}")
         except Exception as e:
-            logger.error(f"Failed to initialize PRAW client: {str(e)}")
-            raise
+            logger.error(f"Unexpected error during authentication: {str(e)}")
+            raise RuntimeError(f"Unexpected authentication error: {str(e)}")
 
-    def refresh_auth(self):
-        """Refresh OAuth token if using refresh_token auth"""
-        if self.config.auth_method == 'refresh_token':
+    def refresh_auth(self, max_attempts: int = 3) -> bool:
+        """Refresh OAuth token if using refresh_token auth
+        
+        Args:
+            max_attempts (int): Maximum number of refresh attempts
+            
+        Returns:
+            bool: True if refresh succeeded, False otherwise
+        """
+        if self.config.auth_method != 'refresh_token':
+            return True
+            
+        for attempt in range(1, max_attempts + 1):
             try:
+                logger.info(f"Attempting token refresh (attempt {attempt}/{max_attempts})")
                 self._initialize_client()
                 logger.success("Successfully refreshed OAuth token")
                 return True
             except Exception as e:
-                logger.error(f"Failed to refresh OAuth token: {str(e)}")
-                return False
-        return True
+                logger.error(f"Refresh attempt {attempt} failed: {str(e)}")
+                if attempt < max_attempts:
+                    time.sleep(2 ** attempt)  # Exponential backoff
+                    
+        logger.error(f"Failed to refresh token after {max_attempts} attempts")
+        return False
 
     def get_comment(self, comment_id: str) -> Optional[praw.models.Comment]:
         """Fetch a comment by ID"""
@@ -139,14 +161,26 @@ class RedditWrapper:
             logger.error(f"Failed to fetch comments from submission {submission_id}: {str(e)}")
             return []
 
-    def is_authenticated(self) -> bool:
-        """Check if the client is properly authenticated"""
+    def is_authenticated(self, retry: bool = True) -> bool:
+        """Check if the client is properly authenticated with optional retry
+        
+        Args:
+            retry (bool): Whether to attempt refresh if auth fails
+            
+        Returns:
+            bool: True if authenticated, False otherwise
+        """
         try:
-            # Simple API call to verify auth
             self.reddit.user.me()
             return True
+        except praw.exceptions.PRAWException as e:
+            logger.warning(f"Auth check failed: {str(e)}")
+            if retry and self.config.auth_method == 'refresh_token':
+                logger.info("Attempting token refresh...")
+                return self.refresh_auth()
+            return False
         except Exception as e:
-            logger.error(f"Authentication check failed: {str(e)}")
+            logger.error(f"Unexpected error during auth check: {str(e)}")
             return False
 
     def search_submissions(self, query: str, subreddit: str = None, limit: int = 10) -> List[praw.models.Submission]:
