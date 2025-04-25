@@ -23,8 +23,8 @@
 - [x] Set up PRAW wrapper
 - [x] Implement authentication system
 - [x] Create thread/comment fetcher
-- [ ] Add reply posting functionality
-- [ ] Implement account rotation
+- [x] Add reply posting functionality
+- [x] Implement account rotation
 - [ ] Set up proxy management
 
 ## Subreddit Rules
