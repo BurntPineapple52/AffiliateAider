@@ -25,7 +25,7 @@
 - [x] Create thread/comment fetcher
 - [x] Add reply posting functionality
 - [x] Implement account rotation
-- [ ] Set up proxy management
+- [x] Set up proxy management
 
 ## Subreddit Rules
 - [ ] Create rule scraper

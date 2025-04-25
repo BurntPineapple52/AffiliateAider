@@ -72,3 +72,35 @@ class ProxyManager:
                     stats.error_count += 1
                 stats.response_time = response_time
                 break
+
+    def get_best_proxy(self) -> Optional[ProxyConfig]:
+        """Get the proxy with highest success rate and fastest response time"""
+        if not self.proxy_stats:
+            return None
+            
+        # Calculate score for each proxy (higher is better)
+        scored_proxies = []
+        for stats in self.proxy_stats:
+            total = stats.success_count + stats.error_count
+            success_rate = stats.success_count / total if total > 0 else 0
+            score = success_rate * 0.7 + (1 / (stats.response_time + 0.1)) * 0.3
+            scored_proxies.append((score, stats.proxy_id))
+            
+        # Sort by score descending
+        scored_proxies.sort(reverse=True, key=lambda x: x[0])
+        best_id = scored_proxies[0][1]
+        return self.get_by_id(best_id)
+
+    def get_by_id(self, proxy_id: str) -> Optional[ProxyConfig]:
+        """Get proxy config by its identifier"""
+        for i, stats in enumerate(self.proxy_stats):
+            if stats.proxy_id == proxy_id:
+                return self.proxies[i]
+        return None
+
+    def disable_proxy(self, proxy_id: str):
+        """Disable a problematic proxy"""
+        proxy = self.get_by_id(proxy_id)
+        if proxy:
+            proxy.enabled = False
+            logger.warning(f"Disabled proxy {proxy_id} due to failures")

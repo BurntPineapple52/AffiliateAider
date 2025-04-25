@@ -22,12 +22,27 @@ class RedditWrapper:
     def _initialize_client(self):
         """Initialize PRAW client with appropriate auth method"""
         try:
+            proxy_config = self.config.proxy
+            proxy_enabled = proxy_config.enabled if proxy_config else False
+            
+            # Set up proxy config if enabled
+            proxy_settings = {}
+            if proxy_enabled:
+                proxy_url = f"{proxy_config.protocol}://"
+                if proxy_config.username and proxy_config.password:
+                    proxy_url += f"{proxy_config.username}:{proxy_config.password}@"
+                proxy_url += f"{proxy_config.host}:{proxy_config.port}"
+                proxy_settings = {'https': proxy_url}
+                logger.info(f"Using proxy: {proxy_url}")
+
             if self.config.auth_method == 'refresh_token' and self.config.refresh_token:
                 self.reddit = praw.Reddit(
                     client_id=self.config.client_id,
                     client_secret=self.config.client_secret,
                     user_agent=self.config.user_agent,
-                    refresh_token=self.config.refresh_token
+                    refresh_token=self.config.refresh_token,
+                    proxies=proxy_settings,
+                    requestor_kwargs={'proxies': proxy_settings}
                 )
             else:
                 self.reddit = praw.Reddit(
@@ -35,7 +50,9 @@ class RedditWrapper:
                     client_secret=self.config.client_secret,
                     user_agent=self.config.user_agent,
                     username=self.config.username,
-                    password=self.config.password
+                    password=self.config.password,
+                    proxies=proxy_settings,
+                    requestor_kwargs={'proxies': proxy_settings}
                 )
             
             # Verify auth immediately
@@ -189,6 +206,30 @@ class RedditWrapper:
         except Exception as e:
             logger.error(f"Failed to fetch comments from submission {submission_id}: {str(e)}")
             return []
+
+    def check_proxy_health(self) -> bool:
+        """Check latency and reliability of current proxy"""
+        if not self.config.proxy or not self.config.proxy.enabled:
+            return True
+            
+        try:
+            start_time = time.time()
+            subreddit = self.reddit.subreddit('all')
+            _ = subreddit.description  # Simple API call to test connectivity
+            response_time = time.time() - start_time
+            
+            # Update proxy stats through proxy manager if available
+            if hasattr(self, 'proxy_manager'):
+                proxy_id = self._get_current_proxy_id()
+                self.proxy_manager.update_stats(proxy_id, True, response_time)
+            
+            return response_time < 2.0  # Threshold in seconds
+        except Exception as e:
+            logger.error(f"Proxy health check failed: {str(e)}")
+            if hasattr(self, 'proxy_manager') and hasattr(self.config, 'proxy'):
+                proxy_id = self._get_current_proxy_id()
+                self.proxy_manager.update_stats(proxy_id, False, 0)
+            return False
 
     def is_authenticated(self, retry: bool = True) -> bool:
         """Check if the client is properly authenticated with optional retry
