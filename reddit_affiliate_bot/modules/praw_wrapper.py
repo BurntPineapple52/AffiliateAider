@@ -14,18 +14,43 @@ class RedditWrapper:
         Args:
             config (RedditConfig): Configuration dataclass containing Reddit credentials
         """
+        self.config = config
+        self._initialize_client()
+        logger.success("Successfully initialized PRAW Reddit client")
+
+    def _initialize_client(self):
+        """Initialize PRAW client with appropriate auth method"""
         try:
-            self.reddit = praw.Reddit(
-                client_id=config.client_id,
-                client_secret=config.client_secret,
-                user_agent=config.user_agent,
-                username=config.username,
-                password=config.password
-            )
-            logger.success("Successfully initialized PRAW Reddit client")
+            if self.config.auth_method == 'refresh_token' and self.config.refresh_token:
+                self.reddit = praw.Reddit(
+                    client_id=self.config.client_id,
+                    client_secret=self.config.client_secret,
+                    user_agent=self.config.user_agent,
+                    refresh_token=self.config.refresh_token
+                )
+            else:
+                self.reddit = praw.Reddit(
+                    client_id=self.config.client_id,
+                    client_secret=self.config.client_secret,
+                    user_agent=self.config.user_agent,
+                    username=self.config.username,
+                    password=self.config.password
+                )
         except Exception as e:
             logger.error(f"Failed to initialize PRAW client: {str(e)}")
             raise
+
+    def refresh_auth(self):
+        """Refresh OAuth token if using refresh_token auth"""
+        if self.config.auth_method == 'refresh_token':
+            try:
+                self._initialize_client()
+                logger.success("Successfully refreshed OAuth token")
+                return True
+            except Exception as e:
+                logger.error(f"Failed to refresh OAuth token: {str(e)}")
+                return False
+        return True
 
     def get_comment(self, comment_id: str) -> Optional[praw.models.Comment]:
         """Fetch a comment by ID"""
@@ -113,6 +138,16 @@ class RedditWrapper:
         except Exception as e:
             logger.error(f"Failed to fetch comments from submission {submission_id}: {str(e)}")
             return []
+
+    def is_authenticated(self) -> bool:
+        """Check if the client is properly authenticated"""
+        try:
+            # Simple API call to verify auth
+            self.reddit.user.me()
+            return True
+        except Exception as e:
+            logger.error(f"Authentication check failed: {str(e)}")
+            return False
 
     def search_submissions(self, query: str, subreddit: str = None, limit: int = 10) -> List[praw.models.Submission]:
         """Search for submissions matching query"""

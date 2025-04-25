@@ -26,8 +26,11 @@ class RedditConfig:
     username: str = get_env('REDDIT_USERNAME')
     password: str = get_env('REDDIT_PASSWORD')
     user_agent: str = get_env('REDDIT_USER_AGENT', 'RedditAffiliateBot/1.0')
+    redirect_uri: str = get_env('REDDIT_REDIRECT_URI', 'http://localhost:8080')
+    refresh_token: str = get_env('REDDIT_REFRESH_TOKEN', '')
     delay_seconds: float = 10.0
     max_attempts: int = 3
+    auth_method: str = 'password'  # 'password' or 'refresh_token'
 
 @dataclass
 class AmazonConfig:
