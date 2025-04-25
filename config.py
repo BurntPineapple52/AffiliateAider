@@ -52,6 +52,8 @@ class BotConfig:
     nlp: NLPConfig
     denied_subreddits_file: str = "denied_subreddits.json"
     log_file: str = "bot.log"
+    account_rotation_strategy: str = "round_robin"  # or "random" or "least_used"
+    max_posts_per_account: int = 10  # per hour
     
     @classmethod
     def from_json(cls, json_file: str) -> "BotConfig":
