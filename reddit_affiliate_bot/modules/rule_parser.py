@@ -1,10 +1,11 @@
-from typing import Dict
+from typing import Dict, Optional
 import re
 from enum import Enum, auto
 from praw.models import Subreddit
 from praw.exceptions import PRAWException
 from ..utils.error_handler import log_error
 from ..utils.logging_utils import logger
+from .rule_cache import RuleCache
 
 class AffiliatePolicy(Enum):
     """Enum representing different affiliate link policies."""
@@ -41,14 +42,16 @@ class RuleParser:
         r"restricted\s+links"
     ]
 
-    def __init__(self):
+    def __init__(self, cache_ttl: int = 86400):
         self.denial_patterns = [re.compile(phrase, re.IGNORECASE) for phrase in self.DENIAL_PHRASES]
         self.approval_patterns = [re.compile(phrase, re.IGNORECASE) for phrase in self.APPROVAL_PHRASES]
         self.restriction_patterns = [re.compile(phrase, re.IGNORECASE) for phrase in self.RESTRICTION_PHRASES]
+        self.cache = RuleCache(default_ttl=cache_ttl)
 
     def detect_affiliate_policy(self, subreddit: Subreddit) -> Dict[str, AffiliatePolicy]:
         """
         Detects the subreddit's affiliate link policy by checking rules and wiki.
+        Uses caching to avoid repeated API calls for the same subreddit.
         
         Args:
             subreddit: The PRAW Subreddit object
@@ -56,11 +59,20 @@ class RuleParser:
         Returns:
             Dict containing policies from different sources and overall determination
         """
+        # Check cache first
+        cached = self.cache.get_rules(subreddit.display_name)
+        if cached:
+            logger.debug(f"Using cached rules for r/{subreddit.display_name}")
+            return cached
+
         policies = {
             'rules_policy': self._check_rules(subreddit),
             'wiki_policy': self._check_wiki(subreddit),
             'overall_policy': AffiliatePolicy.UNKNOWN
         }
+
+        # Cache the results
+        self.cache.set_rules(subreddit.display_name, policies)
         
         # Determine overall policy based on available information
         if policies['rules_policy'] != AffiliatePolicy.UNKNOWN:
