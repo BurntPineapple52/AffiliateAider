@@ -95,16 +95,45 @@ class RedditWrapper:
             return None
 
     def reply_to_comment(self, comment_id: str, text: str) -> bool:
-        """Post a reply to a comment"""
+        """Post a reply to a comment
+        
+        Args:
+            comment_id (str): ID of comment to reply to
+            text (str): Text of reply
+            
+        Returns:
+            bool: True if reply was successful, False otherwise
+        """
+        if not self.is_authenticated():
+            logger.error(f"Cannot reply to {comment_id} - not authenticated")
+            return False
+
         try:
             comment = self.get_comment(comment_id)
-            if comment:
-                reply = comment.reply(text)
-                logger.success(f"Posted reply to comment {comment_id}")
-                return True
+            if not comment:
+                logger.error(f"Comment {comment_id} not found")
+                return False
+                
+            # Check rate limit
+            remaining = float(self.reddit.auth.limits['remaining'])
+            if remaining < 2:  # Leave some buffer
+                wait_time = float(self.reddit.auth.limits['reset_timestamp']) - time.time()
+                logger.warning(f"Rate limit hit, waiting {wait_time:.1f}s before posting")
+                time.sleep(wait_time + 1)
+                
+            reply = comment.reply(text)
+            logger.success(f"Posted reply to {comment_id}: https://reddit.com{reply.permalink}")
+            return True
+            
+        except praw.exceptions.RedditAPIException as e:
+            for sub_err in e.items:
+                logger.error(f"Reddit API error replying to {comment_id}: {sub_err.error_type}: {sub_err.message}")
+            return False
+        except praw.exceptions.ClientException as e:
+            logger.error(f"PRAW client error replying to {comment_id}: {str(e)}")
             return False
         except Exception as e:
-            logger.error(f"Failed to reply to comment {comment_id}: {str(e)}")
+            logger.error(f"Unexpected error replying to {comment_id}: {str(e)}", exc_info=True)
             return False
 
     def get_subreddit_rules(self, subreddit_name: str) -> Optional[Dict[str, Any]]:

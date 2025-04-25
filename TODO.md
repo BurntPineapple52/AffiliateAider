@@ -21,7 +21,7 @@
 
 ## Reddit Integration
 - [x] Set up PRAW wrapper
-- [ ] Implement authentication system
+- [x] Implement authentication system
 - [x] Create thread/comment fetcher
 - [ ] Add reply posting functionality
 - [ ] Implement account rotation
