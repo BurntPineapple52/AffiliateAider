@@ -42,11 +42,11 @@ class RuleParser:
         r"restricted\s+links"
     ]
 
-    def __init__(self, cache_ttl: int = 86400):
+    def __init__(self, cache_ttl_hours: int = 24):
         self.denial_patterns = [re.compile(phrase, re.IGNORECASE) for phrase in self.DENIAL_PHRASES]
         self.approval_patterns = [re.compile(phrase, re.IGNORECASE) for phrase in self.APPROVAL_PHRASES]
         self.restriction_patterns = [re.compile(phrase, re.IGNORECASE) for phrase in self.RESTRICTION_PHRASES]
-        self.cache = RuleCache(default_ttl=cache_ttl)
+        self.cache = RuleCache(ttl_hours=cache_ttl_hours)
 
     def detect_affiliate_policy(self, subreddit: Subreddit) -> Dict[str, AffiliatePolicy]:
         """
@@ -72,7 +72,7 @@ class RuleParser:
         }
 
         # Cache the results
-        self.cache.set_rules(subreddit.display_name, policies)
+        self.cache.save_rules(subreddit.display_name, policies)
         
         # Determine overall policy based on available information
         if policies['rules_policy'] != AffiliatePolicy.UNKNOWN:
