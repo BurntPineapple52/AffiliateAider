@@ -29,7 +29,7 @@
 
 ## Subreddit Rules
 - [x] Create rule scraper
-- [ ] Implement basic rule parsing
+- [x] Implement basic rule parsing
 - [x] Add affiliate policy detection
 - [ ] Set up denied subreddit database
 - [ ] Create rule caching system
